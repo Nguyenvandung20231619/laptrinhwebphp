@@ -1,0 +1,24 @@
+--Giải thích
+Phần A
+
+3. Thử xóa 01 bản ghi members đang có loans để quan sát hành vi ON DELETE
+(RESTRICT/CASCADE) và giải thích ngắn (2–3 câu).
+Lệnh xóa bị từ chối với lỗi Foreign Key Constraint. Do chúng ta thiết lập ON DELETE RESTRICT cho loans.member_id, MySQL sẽ ngăn chặn việc xóa thành viên nếu họ vẫn còn lịch sử mượn sách nhằm bảo vệ tính toàn vẹn và nhất quán của dữ liệu.
+
+Phần C
+
+1. Tối ưu truy vấn Q8:
+
+Index sử dụng: idx_status_due trên bảng loans(status, due_date).
+Dấu hiệu cải thiện: * Type: Chuyển từ ALL (Full Table Scan) sang range (Truy cập theo vùng dữ liệu).
+Key: Cột key thay đổi từ NULL sang idx_status_due.
+Rows: Số lượng hàng ước lượng cần kiểm tra giảm từ toàn bộ bảng (12 dòng) xuống chỉ còn các dòng có trạng thái chưa trả và quá hạn.
+Kết luận: Index này giúp MySQL lọc ngay lập tức các bản ghi thỏa mãn điều kiện WHERE mà không cần duyệt qua các phiếu đã hoàn thành.
+
+2. Tối ưu truy vấn Q10:
+Index sử dụng: idx_member_loandate trên bảng loans(member_id, loan_date).
+Dấu hiệu cải thiện:
+Type: Chuyển từ ALL sang ref hoặc index.
+Key: Cột key sử dụng idx_member_loandate.
+Extra: Xuất hiện Using index, cho thấy MySQL lấy được dữ liệu ngay từ Index mà không cần đọc bảng gốc (Covering Index).
+Kết luận: Index phức hợp này hỗ trợ đồng thời cả việc lọc thời gian (loan_date) và gom nhóm (GROUP BY member_id), giúp giảm tải tối đa cho bộ nhớ.
